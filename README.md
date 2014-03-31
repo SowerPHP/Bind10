@@ -11,7 +11,7 @@ Instalación
 		$ cd website/Module
 		$ git clone https://github.com/SowerPHP/Bind10.git
 
-2.	Habilitar módulo:
+2.	Habilitar módulo en *website/Config/core.php*:
 
 		Module::uses (array(
 			'Bind10'
