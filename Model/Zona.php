@@ -186,7 +186,7 @@ class Model_Zona extends \Model_App
      * @param retry
      * @param expire
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-03-30
+     * @version 2014-04-01
      */
     public function saveSoaRecord ($id, $ttl, $host, $email, $serial, $refresh, $retry, $expire)
     {
@@ -207,6 +207,8 @@ class Model_Zona extends \Model_App
         else {
             $this->db->query ('
                 UPDATE records SET
+                    name = \''.$this->db->sanitize($this->name).'\',
+                    rname = \''.$this->rzone($this->db->sanitize($this->name)).'\',
                     rdata = \''.$this->db->sanitize($host).' '.$this->db->sanitize($email).' '.$this->db->sanitize($serial).' '.$this->db->sanitize($refresh).' '.$this->db->sanitize($retry).' '.$this->db->sanitize($expire).' '.$this->db->sanitize($ttl).'\'
                 WHERE
                     id = '.$this->db->sanitize($id).'
