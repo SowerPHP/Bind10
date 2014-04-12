@@ -27,7 +27,7 @@ namespace website\Bind10;
 /**
  * Modelo Zona (para trabajar con un registro de la tabla)
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
- * @version 2014-03-30
+ * @version 2014-04-12
  */
 class Model_Zona extends \Model_App
 {
@@ -35,8 +35,8 @@ class Model_Zona extends \Model_App
     protected $_database = 'bind10'; ///< Nombre de la configuración de BD
     public $id; ///< Identificador de la zona (ID incremental)
     public $name; ///< Nombre de la zona
-    public $rdclass; ///< ¿?
-    public $dnssec; ///< Si utiliza o no DNSSEC
+    public $rdclass = 'IN'; ///< ¿?
+    public $dnssec = 0; ///< Si utiliza o no DNSSEC
 
     /**
      * Constructor del modelo
@@ -98,24 +98,40 @@ class Model_Zona extends \Model_App
     /**
      * Métoddo que guarda la zona, se ebe haber asignado el nombre a la misma
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-03-30
+     * @version 2014-04-12
      */
     public function save ()
     {
         if (!$this->exists()) {
             $this->db->query ('
-                INSERT INTO zones (name) VALUES (
+                INSERT INTO zones (name, rdclass, dnssec) VALUES (
                     \''.$this->db->sanitize($this->name).'\'
+                    , \''.$this->db->sanitize($this->rdclass).'\'
+                    , \''.$this->db->sanitize($this->dnssec).'\'
                 )
             ');
         } else {
             $this->db->query ('
                 UPDATE zones
-                SET name = \''.$this->db->sanitize($this->name).'\'
+                SET
+                    name = \''.$this->db->sanitize($this->name).'\'
+                    , rdclass = \''.$this->db->sanitize($this->rdclass).'\'
+                    , dnssec = \''.$this->db->sanitize($this->dnssec).'\'
                 WHERE id = '.$this->db->sanitize($this->id)
             );
         }
         $this->get ();
+    }
+
+     /**
+     * Método que borra la zona y sus registros
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
+     * @version 2014-04-05
+     */
+    public function delete ()
+    {
+        $this->db->query('DELETE FROM records WHERE zone_id = '.$this->db->sanitize($this->id));
+        $this->db->query('DELETE FROM zones WHERE id = '.$this->db->sanitize($this->id));
     }
 
     /**
@@ -196,7 +212,7 @@ class Model_Zona extends \Model_App
                 INSERT INTO records (zone_id, name, rname, ttl, rdtype, rdata) VALUES (
                     '.$this->db->sanitize($this->id).',
                     \''.$this->db->sanitize($this->name).'\',
-                    \''.$this->db->sanitize($this->rzone($this->name)).'\',
+                    \''.$this->db->sanitize(rzone($this->name)).'\',
                     '.$this->db->sanitize($ttl).',
                     \'SOA\',
                     \''.$this->db->sanitize($host).' '.$this->db->sanitize($email).' '.$this->db->sanitize($serial).' '.$this->db->sanitize($refresh).' '.$this->db->sanitize($retry).' '.$this->db->sanitize($expire).' '.$this->db->sanitize($ttl).'\'
@@ -208,7 +224,7 @@ class Model_Zona extends \Model_App
             $this->db->query ('
                 UPDATE records SET
                     name = \''.$this->db->sanitize($this->name).'\',
-                    rname = \''.$this->rzone($this->db->sanitize($this->name)).'\',
+                    rname = \''.rzone($this->db->sanitize($this->name)).'\',
                     rdata = \''.$this->db->sanitize($host).' '.$this->db->sanitize($email).' '.$this->db->sanitize($serial).' '.$this->db->sanitize($refresh).' '.$this->db->sanitize($retry).' '.$this->db->sanitize($expire).' '.$this->db->sanitize($ttl).'\'
                 WHERE
                     id = '.$this->db->sanitize($id).'
@@ -248,7 +264,7 @@ class Model_Zona extends \Model_App
                 $this->db->query ('
                     UPDATE records SET
                         name = \''.$this->db->sanitize($name[$i]).'\',
-                        rname = \''.$this->rzone($this->db->sanitize($name[$i])).'\',
+                        rname = \''.rzone($this->db->sanitize($name[$i])).'\',
                         rdtype = \''.$this->db->sanitize($rdtype[$i]).'\',
                         rdata = \''.$this->db->sanitize($rdata[$i]).'\'
                     WHERE id = '.$this->db->sanitize($id[$i]).'
@@ -260,7 +276,7 @@ class Model_Zona extends \Model_App
                     INSERT INTO records (zone_id, name, rname, ttl, rdtype, rdata) VALUES (
                         '.$this->db->sanitize($this->id).',
                         \''.$this->db->sanitize($name[$i]).'\',
-                        \''.$this->rzone($this->db->sanitize($name[$i])).'\',
+                        \''.rzone($this->db->sanitize($name[$i])).'\',
                         '.$this->db->sanitize($ttl).',
                         \''.$this->db->sanitize($rdtype[$i]).'\',
                         \''.$this->db->sanitize($rdata[$i]).'\'
@@ -271,22 +287,79 @@ class Model_Zona extends \Model_App
     }
 
     /**
-     * Método que entrega el nombre de la zona invertido
-     * @param zone Nombre de la zona o dominio (subdominio)
-     * @return Zona invertida
+     * Método que obtiene todos los registros de una zona (con todos sus datos)
+     * @return Arreglo con los registros de la zona
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-03-30
+     * @version 2014-04-12
      */
-    private function rzone ($zone)
+    public function data ()
     {
-        $rzona = '';
-        $aux = explode ('.', $zone);
-        $n = count ($aux);
-        for ($i=$n-1; $i>=0; --$i) {
-            if (isset($aux[$i][0]))
-                $rzona .= $aux[$i].'.';
+        return [
+            'zone' => [
+                'name'    => $this->name,
+                'rdclass' => $this->rdclass,
+                'dnssec'  => $this->dnssec
+            ],
+            'soa'         => $this->db->getRow ('
+                                SELECT name, ttl, rdtype, sigtype, rdata
+                                FROM records
+                                WHERE
+                                    zone_id = '.$this->db->sanitize($this->id).'
+                                    AND rdtype = \'SOA\'
+                            '),
+            'records'     => $this->db->getTable ('
+                                SELECT name, ttl, rdtype, sigtype, rdata
+                                FROM records
+                                WHERE
+                                    zone_id = '.$this->db->sanitize($this->id).'
+                                    AND rdtype != \'SOA\'
+                                ORDER BY rname, id ASC
+                            ')
+        ];
+    }
+
+    /**
+     * Método que importa un registro SOA
+     * @param data Arreglo con los datos exportados del registro SOA
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
+     * @version 2014-04-12
+     */
+    public function importSoaRecord ($data)
+    {
+        $this->db->query ('
+            INSERT INTO records (zone_id, name, rname, ttl, rdtype, sigtype, rdata) VALUES (
+                '.$this->db->sanitize($this->id).',
+                \''.$this->db->sanitize($this->name).'\',
+                \''.$this->db->sanitize(rzone($this->name)).'\',
+                '.$this->db->sanitize($data['ttl']).',
+                \'SOA\',
+                '.(!empty($data['sigtype'])?('\''.$this->db->sanitize($data['sigtype']).'\''):'NULL').',
+                \''.$this->db->sanitize($data['rdata']).'\'
+            )
+        ');
+    }
+
+    /**
+     * Método que importa múltiples registros
+     * @param records Arreglo con los datos exportados de los registros
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
+     * @version 2014-04-12
+     */
+    public function importRecords ($records)
+    {
+        foreach ($records as &$record) {
+            $this->db->query ('
+                INSERT INTO records (zone_id, name, rname, ttl, rdtype, sigtype, rdata) VALUES (
+                    '.$this->db->sanitize($this->id).',
+                    \''.$this->db->sanitize($record['name']).'\',
+                    \''.rzone($this->db->sanitize($record['name'])).'\',
+                    '.$this->db->sanitize($record['ttl']).',
+                    \''.$this->db->sanitize($record['rdtype']).'\',
+                    '.(!empty($record['sigtype'])?('\''.$this->db->sanitize($record['sigtype']).'\''):'NULL').',
+                    \''.$this->db->sanitize($record['rdata']).'\'
+                )
+            ');
         }
-        return $rzona;
     }
 
 }

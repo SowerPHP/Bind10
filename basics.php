@@ -21,27 +21,36 @@
  * En caso contrario, consulte <http://www.gnu.org/licenses/gpl.html>.
  */
 
+// namespace del controlador
+namespace website\Bind10;
+
 /**
- * @file core.php
- * Configuración del módulo
+ * Funcuión que entrega el nombre de la zona invertido
+ * @param zone Nombre de la zona o dominio (subdominio)
+ * @return Zona invertida
+ * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
+ * @version 2014-04-05
  */
+function rzone ($zone)
+{
+    $rzona = '';
+    $aux = explode ('.', $zone);
+    $n = count ($aux);
+    for ($i=$n-1; $i>=0; --$i) {
+        if (isset($aux[$i][0]))
+            $rzona .= $aux[$i].'.';
+    }
+    return $rzona;
+} 
 
-// Menú para el módulo
-\sowerphp\core\Configure::write('nav.module', array(
-    '/zonas/listar' => array(
-        'name' => 'Zonas',
-        'desc' => 'Administrar zonas del DNS',
-        'imag' => '/bind10/img/icons/48x48/dns.png',
-    ),
-    '/zonas/importar' => array(
-        'name' => 'Importar zona',
-        'desc' => 'Importar una zona a través de un archivo JSON',
-        'imag' => '/bind10/img/icons/48x48/dns.png',
-    ),
-));
 
-// Configuración para la base de datos
-\sowerphp\core\Configure::write('database.bind10', array(
-    'type' => 'SQLite',
-    'file' => DIR_PROJECT.'/data/sqlite/zone.sqlite3',
-));
+/**
+ * Libidn2 Internationalized Domain Names (IDNA2008) conversion
+ * @todo Programar función o bien utilizar extensión o comando de shell
+ * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
+ * @version 2014-04-12
+ */
+function idn2 ($zone)
+{
+    return $zone;
+}

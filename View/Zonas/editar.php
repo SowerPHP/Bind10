@@ -81,10 +81,10 @@ echo $f->input(array(
         array('name'=>'rdata', 'check'=>'notempty'),
     ),
     'values' => $records,
-    
 ));
 echo $f->end('Guardar zona: '.$zona);
 ?>
 <div style="text-align:right;margin-bottom:1em;font-size:0.8em">
-    <a href="../listar">Volver al listado de zonas</a>
+    <a href="" onclick="DNS.addGoogleApps('records', '<?=$_base?>'); return false" accesskey="g">Agregar registros para Google Apps</a> |
+    <a href="../listar" accesskey="l">Volver al listado de zonas</a>
 </div>

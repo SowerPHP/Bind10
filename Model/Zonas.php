@@ -27,7 +27,7 @@ namespace website\Bind10;
 /**
  * Modelo Zonas (para trabajar con varios registros de la tabla)
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
- * @version 2014-03-30
+ * @version 2014-04-05
  */
 class Model_Zonas
 {
@@ -45,11 +45,16 @@ class Model_Zonas
     /**
      * Método que entrega el listado de las zonas
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-03-30
+     * @version 2014-04-05
      */
     public function listado ()
     {
-        return $this->db->getTable ('SELECT * FROM zones');
+        return $this->db->getTable ('
+            SELECT z.id, z.name, z.rdclass, z.dnssec, COUNT(*) AS records
+            FROM zones AS z LEFT JOIN records AS r ON z.id = r.zone_id
+            GROUP BY z.id, z.name, z.rdclass, z.dnssec
+            ORDER BY z.name
+        ');
     }
 
 }

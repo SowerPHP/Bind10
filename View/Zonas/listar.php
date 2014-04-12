@@ -2,9 +2,14 @@
 <p>Se muestra el listado de zonas disponibles en el DNS.</p>
 <?php
 foreach ($zonas as &$zona) {
-    $zona[] = '<a href="editar/'.$zona['id'].'"><img src="'.$_base.'/img/icons/16x16/actions/edit.png" alt="" /></a>';
+    $actions = '<a href="descargar/'.$zona['name'].'" title="Descargar archivo de la zona '.$zona['name'].'"><img src="'.$_base.'/img/icons/16x16/actions/download.png" alt="" /></a> ';
+    $actions .= '<a href="json/'.$zona['name'].'" title="Exportar zona '.$zona['name'].' a archivo JSON"><img src="'.$_base.'/exportar/img/icons/16x16/json.png" alt="" /></a> ';
+    $actions .= '<a href="editar/'.$zona['name'].'" title="Editar la zona '.$zona['name'].'"><img src="'.$_base.'/img/icons/16x16/actions/edit.png" alt="" /></a> ';
+    $actions .= '<a href="eliminar/'.$zona['name'].'" onclick="return eliminar(\'Zona\', \''.$zona['name'].'\')" title="Eliminar la zona '.$zona['name'].'"><img src="'.$_base.'/img/icons/16x16/actions/delete.png" alt="" /></a>';
+    $zona[] = $actions;
+    unset ($zona['id']);
 }
-array_unshift ($zonas, array('ID', 'Zona', 'RD Class', 'DNSSEC', 'Acciones'));
+array_unshift ($zonas, array('Zona', 'RD Class', 'DNSSEC', 'Registros', 'Acciones'));
 $t = new \sowerphp\app\View_Helper_Maintainer (array('link'=>$_base.'/bind10/zonas'), false);
 $t->setId ('zonas');
 echo $t->listar($zonas);
