@@ -56,9 +56,9 @@ class Model_Zona extends \Model_App
      * Método para obtener los atributos de la zona
      * @param id Identificador de la zona o la zona
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-03-30
+     * @version 2014-04-26
      */
-    private function get ($id = null)
+    public function get ($id = null)
     {
         // si el ID es nulo se busca a través del ID o del nombre
         if (!$id) {
