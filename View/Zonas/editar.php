@@ -3,7 +3,7 @@
 $f = new \sowerphp\general\View_Helper_Form ();
 echo $f->begin (array('onsubmit'=>'Form.check()'));
 echo $f->input (array(
-    'type' => 'hidden', 
+    'type' => 'hidden',
     'name' => 'soa_id',
     'value' => $soa['soa_id'],
 ));

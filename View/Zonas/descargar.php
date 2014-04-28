@@ -24,9 +24,9 @@ $TTL <?=$data['soa']['ttl'],"\n"?>
     <?=$soa[6]?> ; TTL
 )
 
-; Registers
+; Records
 <?php
-foreach ($data['registers'] as &$register) {
+foreach ($data['records'] as &$register) {
     echo $register['name'],' ',$data['zone']['rdclass'],' ',$register['rdtype'],' ',$register['rdata'],"\n";
 }
 

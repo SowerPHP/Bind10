@@ -1,4 +1,4 @@
-<h1>Importar zona</h1> 
+<h1>Importar zona</h1>
 <p>A través de este formulario podrá importar una zona utilizando un archivo JSON previamente exportado usando este módulo o bien que fue generado manualmente.</p>
 
 <?php

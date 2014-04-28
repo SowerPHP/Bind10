@@ -210,12 +210,18 @@ class Controller_Zonas extends \Controller_App
     /**
      * Acción para importar una zona del DNS desde un archivo JSON
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-04-12
+     * @version 2014-04-28
      */
     public function importar ()
     {
         if (isset($_FILES['archivo']) && !$_FILES['archivo']['error']) {
             $data = json_decode(file_get_contents($_FILES['archivo']['tmp_name']), true);
+            if ($data===null) {
+                \sowerphp\core\Model_Datasource_Session::message (
+                    'En el archivo subido no se han encontrado datos válidos para importar'
+                );
+                $this->redirect ('/bind10/zonas/importar');
+            }
             $Zona = new Model_Zona ($data['zone']['name']);
             if ($Zona->exists()) {
                 \sowerphp\core\Model_Datasource_Session::message (
