@@ -56,7 +56,7 @@ class Model_Zona extends \Model_App
      * Método para obtener los atributos de la zona
      * @param id Identificador de la zona o la zona
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-04-28
+     * @version 2014-07-01
      */
     public function get ($id = null)
     {
@@ -70,13 +70,13 @@ class Model_Zona extends \Model_App
         }
         // obtener atributos de la zona
         if (is_numeric($id)) {
-            $this->_set ($this->db->getRow('
+            $this->set ($this->db->getRow('
                 SELECT *
                 FROM zones
                 WHERE id = :id
             ', [':id'=>$id]));
         } else {
-            $this->_set ($this->db->getRow('
+            $this->set ($this->db->getRow('
                 SELECT *
                 FROM zones
                 WHERE name = :name
