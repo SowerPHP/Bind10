@@ -43,5 +43,5 @@
 // Configuración para la base de datos
 \sowerphp\core\Configure::write('database.bind10', array(
     'type' => 'SQLite',
-    'file' => DIR_PROJECT.'/data/sqlite/zone.sqlite3',
+    'file' => DIR_PROJECT.'/data/sqlite/default.sqlite3',
 ));
