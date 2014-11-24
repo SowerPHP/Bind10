@@ -37,7 +37,7 @@ class Controller_Zonas extends \Controller_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-05
      */
-    public function index ()
+    public function index()
     {
         $this->redirect ('/bind10/zonas/listar');
     }
@@ -45,32 +45,39 @@ class Controller_Zonas extends \Controller_App
     /**
      * Mostrar el listado de zonas disponibles
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-03-30
+     * @version 2014-11-23
      */
-    public function listar ()
+    public function listar()
     {
-        $this->set(array(
-            'zonas' => (new Model_Zonas)->listado()
-        ));
+        $bind10 = $this->Auth->User->inGroup(['bind10']);
+        if ($bind10)
+            $zonas = (new Model_Zonas)->getAll($this->Auth->User->id);
+        else
+            $zonas = (new Model_Zonas)->getByUser($this->Auth->User->id);
+        $this->set([
+            'zonas' => $zonas,
+            'bind10' => $bind10,
+        ]);
     }
 
     /**
      * Acción para agregar una nueva zona al DNS
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-04-12
+     * @version 2014-11-23
      */
-    public function crear ()
+    public function crear()
     {
         if (isset($_POST['submit']) && !empty($_POST['zona'])) {
             $zona = idn2($_POST['zona']);
             $Zona = new Model_Zona ($zona);
             if (!$Zona->exists()) {
                 $Zona->name = $zona;
+                $Zona->usuario = $this->Auth->User->id;
                 $Zona->save();
                 $this->redirect ('/bind10/zonas/editar/'.$zona);
             } else {
                 \sowerphp\core\Model_Datasource_Session::message (
-                    'Zona <em>'.$Zona->name.'</em> ya existe'
+                    'Zona <em>'.$Zona->name.'</em> ya existe', 'error'
                 );
                 $this->redirect ('/bind10/zonas/listar');
             }
@@ -81,16 +88,22 @@ class Controller_Zonas extends \Controller_App
      * Acción para editar una zona del DNS
      * @param id Identificador de la zona o la zona
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-04-07
+     * @version 2014-11-23
      */
-    public function editar ($id)
+    public function editar($id)
     {
         // crear zona solicitada y verificar que exista
         $id = idn2($id);
         $Zona = new Model_Zona ($id);
         if (!$Zona->exists()) {
             \sowerphp\core\Model_Datasource_Session::message (
-                'Zona('.$id.') no existe'
+                'Zona('.$id.') no existe', 'error'
+            );
+            $this->redirect ('/bind10/zonas/listar');
+        }
+        if (!($Zona->usuario===$this->Auth->User->id or $this->Auth->User->inGroup(['bind10']))) {
+            \sowerphp\core\Model_Datasource_Session::message (
+                'Usted no es el propietario de la Zona('.$id.')', 'error'
             );
             $this->redirect ('/bind10/zonas/listar');
         }
@@ -99,6 +112,7 @@ class Controller_Zonas extends \Controller_App
             $this->set (array(
                 'zona' => $Zona->name,
                 'soa' => $Zona->getSoaRecord(),
+                'usuario' => $Zona->getUsuario()->usuario,
                 'records' => $Zona->getRecords(),
                 '_header_extra' => array(
                     'js' => array('/bind10/js/bind10.js'),
@@ -107,7 +121,15 @@ class Controller_Zonas extends \Controller_App
         }
         // guardar datos de la zona si se envió el formulario
         else {
+            $Usuario = new \sowerphp\app\Sistema\Usuarios\Model_Usuario($_POST['usuario']);
+            if (!$Usuario->exists()) {
+                \sowerphp\core\Model_Datasource_Session::message (
+                    'Usuario('.$_POST['usuario'].') no existe', 'error'
+                );
+                $this->redirect ('/bind10/zonas/editar/'.$id);
+            }
             $Zona->name = idn2($_POST['zona']);
+            $Zona->usuario = $Usuario->id;
             $Zona->save();
             $Zona->saveSoaRecord(
                 $_POST['soa_id'],
@@ -131,7 +153,7 @@ class Controller_Zonas extends \Controller_App
             );
             // redireccionar
             \sowerphp\core\Model_Datasource_Session::message (
-                'Zona <em>'.$Zona->name.'</em> actualizada'
+                'Zona <em>'.$Zona->name.'</em> actualizada', 'ok'
             );
             $this->redirect ('/bind10/zonas/listar');
         }
@@ -141,15 +163,21 @@ class Controller_Zonas extends \Controller_App
      * Acción para eliminar una zona del dns
      * @param id Identificador de la zona o la zona
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-04-05
+     * @version 2014-11-23
      */
-    public function eliminar ($id)
+    public function eliminar($id)
     {
         // crear zona solicitada y verificar que exista
         $Zona = new Model_Zona ($id);
         if (!$Zona->exists()) {
             \sowerphp\core\Model_Datasource_Session::message (
-                'Zona('.$id.') no existe'
+                'Zona('.$id.') no existe', 'error'
+            );
+            $this->redirect ('/bind10/zonas/listar');
+        }
+        if (!($Zona->usuario===$this->Auth->User->id or $this->Auth->User->inGroup(['bind10']))) {
+            \sowerphp\core\Model_Datasource_Session::message (
+                'Usted no es el propietario de la Zona('.$id.')', 'error'
             );
             $this->redirect ('/bind10/zonas/listar');
         }
@@ -157,7 +185,7 @@ class Controller_Zonas extends \Controller_App
         $Zona->delete();
         // redireccionar
         \sowerphp\core\Model_Datasource_Session::message (
-            'Zona <em>'.$Zona->name.'</em> eliminada'
+            'Zona <em>'.$Zona->name.'</em> eliminada', 'ok'
         );
         $this->redirect ('/bind10/zonas/listar');
     }
@@ -166,15 +194,21 @@ class Controller_Zonas extends \Controller_App
      * Acción para exportar una zona del DNS
      * @param id Identificador de la zona o la zona
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-04-05
+     * @version 2014-11-23
      */
-    private function exportar ($id)
+    private function exportar($id)
     {
         // crear zona solicitada y verificar que exista
         $Zona = new Model_Zona ($id);
         if (!$Zona->exists()) {
             \sowerphp\core\Model_Datasource_Session::message (
-                'Zona('.$id.') no existe'
+                'Zona('.$id.') no existe', 'error'
+            );
+            $this->redirect ('/bind10/zonas/listar');
+        }
+        if (!($Zona->usuario===$this->Auth->User->id or $this->Auth->User->inGroup(['bind10']))) {
+            \sowerphp\core\Model_Datasource_Session::message (
+                'Usted no es el propietario de la Zona('.$id.')', 'error'
             );
             $this->redirect ('/bind10/zonas/listar');
         }
@@ -191,9 +225,9 @@ class Controller_Zonas extends \Controller_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-05
      */
-    public function json ($id)
+    public function json($id)
     {
-        $this->exportar ($id);
+        $this->exportar($id);
     }
 
     /**
@@ -202,41 +236,42 @@ class Controller_Zonas extends \Controller_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-05
      */
-    public function descargar ($id)
+    public function descargar($id)
     {
-        $this->exportar ($id);
+        $this->exportar($id);
     }
 
     /**
      * Acción para importar una zona del DNS desde un archivo JSON
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-04-28
+     * @version 2014-11-23
      */
-    public function importar ()
+    public function importar()
     {
         if (isset($_FILES['archivo']) && !$_FILES['archivo']['error']) {
             $data = json_decode(file_get_contents($_FILES['archivo']['tmp_name']), true);
             if ($data===null) {
                 \sowerphp\core\Model_Datasource_Session::message (
-                    'En el archivo subido no se han encontrado datos válidos para importar'
+                    'En el archivo subido no se han encontrado datos válidos para importar', 'error'
                 );
                 $this->redirect ('/bind10/zonas/importar');
             }
             $Zona = new Model_Zona ($data['zone']['name']);
             if ($Zona->exists()) {
                 \sowerphp\core\Model_Datasource_Session::message (
-                    'Zona <em>'.$data['zone']['name'].'</em> ya existe, no se puede importar, solo editar'
+                    'Zona <em>'.$data['zone']['name'].'</em> ya existe, no se puede importar, solo editar', 'warning'
                 );
                 $this->redirect ('/bind10/zonas/editar/'.$data['zone']['name']);
             }
             $Zona->name = $data['zone']['name'];
             $Zona->rdclass = $data['zone']['rdclass'];
             $Zona->dnssec = $data['zone']['dnssec'];
+            $Zona->usuario = $this->Auth->User->id;
             $Zona->save();
             $Zona->importSoaRecord($data['soa']);
             $Zona->importRecords($data['records']);
             \sowerphp\core\Model_Datasource_Session::message (
-                'Zona <em>'.$Zona->name.'</em> importada'
+                'Zona <em>'.$Zona->name.'</em> importada', 'ok'
             );
         }
     }

@@ -7,7 +7,7 @@ echo $f->begin(array('onsubmit'=>'Form.check()'));
 echo $f->input(array(
     'type' => 'file',
     'name' => 'archivo',
-    'label' => 'Archivo JSON de la zona',
+    'label' => 'Archivo JSON',
     'check' => 'notempty',
     'help' => 'Archivo JSON previamente exportado usando este módulo o bien que fue generado manualmente.'
 ));

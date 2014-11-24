@@ -27,7 +27,7 @@ namespace website\Bind10;
 /**
  * Modelo Zonas (para trabajar con varios registros de la tabla)
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
- * @version 2014-04-05
+ * @version 2014-11-23
  */
 class Model_Zonas
 {
@@ -37,24 +37,51 @@ class Model_Zonas
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-03-30
      */
-    public function __construct ()
+    public function __construct()
     {
         $this->db = &\sowerphp\core\Model_Datasource_Database::get('bind10');
     }
 
     /**
-     * Método que entrega el listado de las zonas
+     * Método que entrega el listado de todas las zonas
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-04-05
+     * @version 2014-11-23
      */
-    public function listado ()
+    public function getAll($user)
     {
-        return $this->db->getTable ('
+        return $this->db->getTable('
+            SELECT * FROM (
+                SELECT u.usuario, z.id, z.name, z.rdclass, z.dnssec, COUNT(*) AS records
+                FROM zones AS z LEFT JOIN records AS r ON z.id = r.zone_id, usuario AS u
+                WHERE z.usuario = u.id AND u.id = :user
+                GROUP BY z.id, z.name, z.rdclass, z.dnssec
+                ORDER BY z.name
+            ) AS t1
+            UNION
+            SELECT * FROM (
+                SELECT u.usuario, z.id, z.name, z.rdclass, z.dnssec, COUNT(*) AS records
+                FROM zones AS z LEFT JOIN records AS r ON z.id = r.zone_id, usuario AS u
+                WHERE z.usuario = u.id AND u.id != :user
+                GROUP BY z.id, z.name, z.rdclass, z.dnssec
+                ORDER BY u.usuario, z.name
+            ) AS t2
+        ', [':user'=>$user]);
+    }
+
+    /**
+     * Método que entrega el listado de las zonas de un usuario
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
+     * @version 2014-11-23
+     */
+    public function getByUser($user)
+    {
+        return $this->db->getTable('
             SELECT z.id, z.name, z.rdclass, z.dnssec, COUNT(*) AS records
             FROM zones AS z LEFT JOIN records AS r ON z.id = r.zone_id
+            WHERE z.usuario = :user
             GROUP BY z.id, z.name, z.rdclass, z.dnssec
             ORDER BY z.name
-        ');
+        ', [':user'=>$user]);
     }
 
 }

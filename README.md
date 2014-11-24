@@ -1,4 +1,4 @@
-SowerPHP: Módulo Bind10 
+SowerPHP: Módulo Bind10
 =======================
 
 Módulo para administrar las zonas de un servidor DNS bind10.
@@ -19,4 +19,14 @@ Instalación
 
 3.	El archivo de zonas debe estar ubicado en:
 
-		data/sqlite/zone.sqlite3
+		data/sqlite/default.sqlite3
+
+	**Nota**: tanto el archivo de la base de datos como el directorio padre
+	(sqlite) deben ser escribibles por el usuario web.
+
+4.	Se debe cargar en la base de datos de bind10 las tablas para usuario de
+	la extensión sowerphp/app módulo Sistema/Usuarios. Esto creará el
+	usuario *admin* con contraseña *admin*.
+
+5.	Cargar en la base de datos de bind10 el script ubicado en
+	*Model/Sql/bind10.sql*.

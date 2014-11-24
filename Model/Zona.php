@@ -27,7 +27,7 @@ namespace website\Bind10;
 /**
  * Modelo Zona (para trabajar con un registro de la tabla)
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
- * @version 2014-04-28
+ * @version 2014-11-23
  */
 class Model_Zona extends \Model_App
 {
@@ -37,6 +37,11 @@ class Model_Zona extends \Model_App
     public $name; ///< Nombre de la zona
     public $rdclass = 'IN'; ///< ¿?
     public $dnssec = 0; ///< Si utiliza o no DNSSEC
+    public $usuario; ///< Propietario del dominio en el DNS
+
+    public static $fkNamespace = array(
+        'Model_Usuario' => 'sowerphp\app\Sistema\Usuarios',
+    ); ///< Namespaces que utiliza esta clase
 
     /**
      * Constructor del modelo
@@ -44,7 +49,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-03-30
      */
-    public function __construct ($id = null)
+    public function __construct($id = null)
     {
         parent::__construct ();
         if ($id) {
@@ -58,7 +63,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-07-01
      */
-    public function get ($id = null)
+    public function get($id = null)
     {
         // si el ID es nulo se busca a través del ID o del nombre
         if (!$id) {
@@ -90,7 +95,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-03-30
      */
-    public function exists ()
+    public function exists()
     {
         return (boolean) $this->id;
     }
@@ -98,30 +103,32 @@ class Model_Zona extends \Model_App
     /**
      * Métoddo que guarda la zona, se ebe haber asignado el nombre a la misma
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-04-28
+     * @version 2014-11-23
      */
-    public function save ()
+    public function save()
     {
         if (!$this->exists()) {
             $this->db->query ('
-                INSERT INTO zones (name, rdclass, dnssec) VALUES (
-                    :name, :rdclass, :dnssec
+                INSERT INTO zones (name, rdclass, dnssec, usuario) VALUES (
+                    :name, :rdclass, :dnssec, :usuario
                 )
             ', [
                 ':name' => $this->name,
                 ':rdclass' => $this->rdclass,
                 ':dnssec' =>  $this->dnssec,
+                ':usuario' => $this->usuario,
             ]);
         } else {
             $this->db->query ('
                 UPDATE zones
-                SET name = :name, rdclass = :rdclass, dnssec = :dnssec
+                SET name = :name, rdclass = :rdclass, dnssec = :dnssec, usuario = :usuario
                 WHERE id = :id
             ', [
                 ':id' => $this->id,
                 ':name' => $this->name,
                 ':rdclass' => $this->rdclass,
                 ':dnssec' =>  $this->dnssec,
+                ':usuario' => $this->usuario,
             ]);
         }
         $this->get ();
@@ -132,7 +139,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-28
      */
-    public function delete ()
+    public function delete()
     {
         $this->db->query('DELETE FROM records WHERE zone_id = :id', [':id'=>$this->id]);
         $this->db->query('DELETE FROM zones WHERE id = :id', [':id'=>$this->id]);
@@ -144,7 +151,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-28
      */
-    public function getSoaRecord ()
+    public function getSoaRecord()
     {
         $aux1 = $this->db->getRow ('
             SELECT id, rdata
@@ -184,7 +191,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-28
      */
-    public function getRecords ()
+    public function getRecords()
     {
         return $this->db->getTable ('
             SELECT id, name, rdtype, rdata
@@ -206,7 +213,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-28
      */
-    public function saveSoaRecord ($id, $ttl, $host, $email, $serial, $refresh, $retry, $expire)
+    public function saveSoaRecord($id, $ttl, $host, $email, $serial, $refresh, $retry, $expire)
     {
         // registro SOA nuevo
         if (empty($id)) {
@@ -255,7 +262,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-28
      */
-    public function saveRecords ($id, $name, $rdtype, $rdata, $ttl)
+    public function saveRecords($id, $name, $rdtype, $rdata, $ttl)
     {
         // borrar registros que no se salvaron
         $this->db->query ('
@@ -311,7 +318,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-28
      */
-    public function data ()
+    public function data()
     {
         return [
             'zone' => [
@@ -343,7 +350,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-28
      */
-    public function importSoaRecord ($data)
+    public function importSoaRecord($data)
     {
         $this->db->query ('
             INSERT INTO records (zone_id, name, rname, ttl, rdtype, sigtype, rdata) VALUES (
@@ -372,7 +379,7 @@ class Model_Zona extends \Model_App
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
      * @version 2014-04-28
      */
-    public function importRecords ($records)
+    public function importRecords($records)
     {
         foreach ($records as &$record) {
              $this->db->query ('

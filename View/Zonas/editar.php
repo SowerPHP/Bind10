@@ -69,6 +69,13 @@ echo $f->input (array(
     'check' => 'notempty integer',
     'help' => 'Ejemplo: 3600',
 ));
+echo $f->input (array(
+    'name' => 'usuario',
+    'label' => 'Usuario',
+    'value' => $usuario,
+    'check' => 'notempty',
+    'help' => 'Usuario de la aplicación que es propietario del dominio en el DNS',
+));
 echo $f->input(array(
     'type' => 'js',
     'id' => 'records',
