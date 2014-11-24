@@ -62,13 +62,22 @@ class Controller_Zonas extends \Controller_App
 
     /**
      * Acción para agregar una nueva zona al DNS
+     * @todo Reemplazar validación de dominio con una expresión regular
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
-     * @version 2014-11-23
+     * @version 2014-11-24
      */
     public function crear()
     {
         if (isset($_POST['submit']) && !empty($_POST['zona'])) {
-            $zona = idn2($_POST['zona']);
+            $zona = idn2(strtolower($_POST['zona']));
+            if ($zona[strlen($zona)-1]!='.') $zona .= '.';
+            $chars = count_chars($zona);
+            if ($chars[46]<2 or $chars[32]) { // FIXME
+                \sowerphp\core\Model_Datasource_Session::message (
+                    'Zona <em>'.$_POST['zona'].'</em> es inválida. Debe ser un FQDN.', 'warning'
+                );
+                $this->redirect ('/bind10/zonas/crear');
+            }
             $Zona = new Model_Zona ($zona);
             if (!$Zona->exists()) {
                 $Zona->name = $zona;
