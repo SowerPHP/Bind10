@@ -27,7 +27,7 @@ namespace website\Bind10;
 /**
  * Modelo Zona (para trabajar con un registro de la tabla)
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
- * @version 2014-11-23
+ * @version 2014-12-03
  */
 class Model_Zona extends \Model_App
 {
@@ -310,6 +310,23 @@ class Model_Zona extends \Model_App
                 ]);
             }
         }
+    }
+
+    /**
+     * Método para actualizar un registro de la zona
+     * @param name Nombre del registro en formato FQDN
+     * @param data Datos o valor para el registro
+     * @param type Tipo de registro (A, AAAA, NS, etc)
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
+     * @version 2014-12-03
+     */
+    public function saveRecord($name, $data, $type = 'A')
+    {
+        $this->db->query('
+            UPDATE records
+            SET rdata = :data
+            WHERE zone_id = :zone AND name = :name AND rdtype = :type
+        ', ['zone'=>$this->id, ':name'=>$name, ':data'=>$data, ':type'=>$type]);
     }
 
     /**

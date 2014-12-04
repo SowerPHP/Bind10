@@ -285,4 +285,33 @@ class Controller_Zonas extends \Controller_App
         }
     }
 
+    /**
+     * Función de la API para actualizar los registros de una zona
+     * @param zona FQDN de la zona que se está actualizando
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
+     * @version 2014-12-03
+     */
+    public function _api_crud_PATCH($zona)
+    {
+        // verificar autenticación, zona y permisos
+        $User = $this->Api->getAuthUser();
+        if (is_string($User))
+            $this->Api->send($User, 401);
+        if (substr($zona, -1)!='.')
+            $zona .= '.';
+        $Zona = new Model_Zona($zona);
+        if (!$Zona->exists())
+            $this->Api->send('Zona '.$zona.' no existe' , 400);
+        if ($Zona->usuario!=$User->id)
+            $this->Api->send('Usuario '.$User->usuario.' no es dueño de la zona '.$zona , 403);
+        // asignar IP a registros pasados
+        $ip = $this->Auth->ip();
+        foreach($this->Api->data['registros'] as &$r) {
+            if (!isset($r['ip'])) $r['ip'] = $ip;
+            if (!isset($r['tipo'])) $r['tipo'] = 'A';
+            $Zona->saveRecord($r['registro'].'.'.$Zona->name, $r['ip'], $r['tipo']);
+        }
+        $this->Api->send('Registro(s) de la zona '.$zona.' modificado(s)');
+    }
+
 }
