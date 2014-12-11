@@ -19,9 +19,9 @@ DNS.addGoogleApps = function (tableID, _base)
     ];
     for (i=0; i<registros.length; ++i) {
         var registro = '<tr><td style="display:none;"><div><input type="hidden" name="id[]" value="" /></div></td>'+
-            '<td><div><input type="text" name="name[]" value="'+registros[i][0]+zona+'" id="name[]Field" class=" check notempty"  /></div></td>'+
-            '<td><div><input type="text" name="rdtype[]" value="'+registros[i][1]+'" id="rdtype[]Field" class=" check notempty"  /></div></td>'+
-            '<td><div><input type="text" name="rdata[]" value="'+registros[i][2]+'" id="rdata[]Field" class=" check notempty"  /></div></td>'+
+            '<td><div><input type="text" name="name[]" value="'+registros[i][0]+zona+'" id="name[]Field" class="form-control check notempty"  /></div></td>'+
+            '<td><div><input type="text" name="rdtype[]" value="'+registros[i][1]+'" id="rdtype[]Field" class="form-control check notempty"  /></div></td>'+
+            '<td><div><input type="text" name="rdata[]" value="'+registros[i][2]+'" id="rdata[]Field" class="form-control check notempty"  /></div></td>'+
             '<td><a href="" onclick="$(this).parent().parent().remove(); return false" title="Eliminar"><img src="'+_base+'/img/icons/16x16/actions/delete.png" alt="add" /></a></td></tr>';
         $('#'+tableID).append(registro);
     }
