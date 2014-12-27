@@ -144,7 +144,7 @@ class Controller_Zonas extends \Controller_App
                 $_POST['soa_id'],
                 $_POST['soa_ttl'],
                 idn2($_POST['soa_host']),
-                idn2($_POST['soa_email']),
+                idn2(str_replace('@', '.', $_POST['soa_email'])),
                 $_POST['soa_serial'],
                 $_POST['soa_refresh'],
                 $_POST['soa_retry'],
