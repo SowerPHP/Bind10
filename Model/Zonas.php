@@ -97,7 +97,7 @@ class Model_Zonas
             $seriales[] = $aux[2];
         }
         rsort($seriales);
-        return $seriales[0];
+        return isset($seriales[0]) ? $seriales[0] : null;
     }
 
     public function getCountByUser($user)
