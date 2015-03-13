@@ -96,6 +96,7 @@ class Model_Zonas
             $aux = explode(' ', $d);
             $seriales[] = $aux[2];
         }
+        rsort($seriales);
         return $seriales[0];
     }
 
