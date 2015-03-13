@@ -27,7 +27,7 @@ namespace website\Bind10;
 /**
  * Modelo Zonas (para trabajar con varios registros de la tabla)
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]delaf.cl)
- * @version 2014-11-23
+ * @version 2015-03-13
  */
 class Model_Zonas
 {
@@ -82,6 +82,38 @@ class Model_Zonas
             GROUP BY z.id, z.name, z.rdclass, z.dnssec
             ORDER BY z.name
         ', [':user'=>$user]);
+    }
+
+    public function getMaxSerialByUser($user)
+    {
+        $rdata = $this->db->getCol('
+            SELECT r.rdata
+            FROM zones AS z JOIN records AS r ON z.id = r.zone_id
+            WHERE z.usuario = :user AND r.rdtype = \'SOA\'
+        ', [':user'=>$user]);
+        $seriales = [];
+        foreach ($rdata as $d) {
+            $aux = explode(' ', $d);
+            $seriales[] = $aux[2];
+        }
+        return $seriales[0];
+    }
+
+    public function getCountByUser($user)
+    {
+        return $this->db->getValue(
+            'SELECT COUNT(*) FROM zones WHERE usuario = :user',
+            [':user'=>$user]
+        );
+    }
+
+    public function getCountRecordsByUser($user)
+    {
+        return $this->db->getValue('
+            SELECT COUNT(*)
+            FROM zones AS z LEFT JOIN records AS r ON z.id = r.zone_id
+            WHERE z.usuario = :user'
+        , [':user'=>$user]);
     }
 
 }
