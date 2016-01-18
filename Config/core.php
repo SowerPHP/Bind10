@@ -31,12 +31,12 @@
     '/zonas/listar' => array(
         'name' => 'Zonas',
         'desc' => 'Administrar zonas del DNS',
-        'imag' => '/bind10/img/icons/48x48/dns.png',
+        'icon' => 'fa fa-server',
     ),
     '/zonas/importar' => array(
         'name' => 'Importar zona',
         'desc' => 'Importar una zona a través de un archivo JSON',
-        'imag' => '/bind10/img/icons/48x48/dns.png',
+        'icon' => 'fa fa-upload',
     ),
 ));
 

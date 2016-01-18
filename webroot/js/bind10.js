@@ -1,9 +1,4 @@
-function DNS ()
-{
-}
-
-DNS.addGoogleApps = function (tableID, _base)
-{
+function zona_addGoogleApps() {
     var zona = document.getElementById('zonaField').value;
     var registros = [
         ['', 'MX', '1 aspmx.l.google.com.'],
@@ -22,7 +17,7 @@ DNS.addGoogleApps = function (tableID, _base)
             '<td><div><input type="text" name="name[]" value="'+registros[i][0]+zona+'" id="name[]Field" class="form-control check notempty"  /></div></td>'+
             '<td><div><input type="text" name="rdtype[]" value="'+registros[i][1]+'" id="rdtype[]Field" class="form-control check notempty"  /></div></td>'+
             '<td><div><input type="text" name="rdata[]" value="'+registros[i][2]+'" id="rdata[]Field" class="form-control check notempty"  /></div></td>'+
-            '<td><a href="" onclick="$(this).parent().parent().remove(); return false" title="Eliminar"><img src="'+_base+'/img/icons/16x16/actions/delete.png" alt="add" /></a></td></tr>';
-        $('#'+tableID).append(registro);
+            '<td><a href="" onclick="$(this).parent().parent().remove(); return false" title="Eliminar"><span class="fa fa-remove btn btn-default" aria-hidden="true"></span></a></td></tr>';
+        $('#records').append(registro);
     }
 }
